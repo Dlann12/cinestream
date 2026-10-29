@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="id" class="dark scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineStream — Platform Streaming Film Gratis & Legal</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Tailwind Config -->
+    <script src="js/tailwind-config.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="min-h-screen flex flex-col selection:bg-cine-red selection:text-white">
+
+    <!-- ==================== STICKY NAVBAR ==================== -->
+    <header id="mainNavbar" class="fixed top-0 left-0 right-0 z-40 transition-all duration-300 bg-neutral-950/90 backdrop-blur-md border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-3">
+            <!-- Left: Brand & Main Nav -->
+            <div class="flex items-center gap-6 lg:gap-8">
+                <a href="#home" onclick="switchView('home'); return false;" class="flex items-center gap-2.5 group focus:outline-none">
+                    <div class="w-9 h-9 rounded-lg bg-cine-red flex items-center justify-center shadow-lg shadow-cine-red/30 group-hover:scale-105 transition-transform">
+                        <i class="fa-solid fa-play text-white text-base ml-0.5"></i>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="font-display font-extrabold text-xl sm:text-2xl tracking-tight text-white">
+                            CINE<span class="text-cine-red">STREAM</span>
+                        </span>
+                        <span class="text-[10px] uppercase tracking-widest text-neutral-400 -mt-1 hidden sm:block">100% Legal Free Cinema</span>
+                    </div>
+                </a>
+
+                <!-- Desktop Navigation Links -->
+                <nav class="hidden md:flex items-center gap-1 lg:gap-2">
+                    <button onclick="switchView('home')" data-nav="home" class="nav-link px-3.5 py-2 rounded-lg text-sm font-medium transition-colors text-white bg-white/10">
+                        <i class="fa-solid fa-house mr-1.5 text-cine-red"></i>Home
+                    </button>
+                    <button onclick="switchView('movies')" data-nav="movies" class="nav-link px-3.5 py-2 rounded-lg text-sm font-medium text-neutral-300 hover:text-white hover:bg-white/5 transition-colors">
+                        <i class="fa-solid fa-film mr-1.5"></i>Movies
+                    </button>
+                    <button onclick="switchView('genres')" data-nav="genres" class="nav-link px-3.5 py-2 rounded-lg text-sm font-medium text-neutral-300 hover:text-white hover:bg-white/5 transition-colors">
+                        <i class="fa-solid fa-layer-group mr-1.5"></i>Genres
+                    </button>
+                    <button onclick="switchView('mylist')" data-nav="mylist" class="nav-link px-3.5 py-2 rounded-lg text-sm font-medium text-neutral-300 hover:text-white hover:bg-white/5 transition-colors flex items-center gap-1.5">
+                        <i class="fa-solid fa-bookmark"></i>My List
+                        <span id="navWatchlistBadge" class="px-1.5 py-0.5 text-[11px] font-bold rounded-full bg-cine-red text-white hidden">0</span>
+                    </button>
+                    <button onclick="switchView('admin')" data-nav="admin" class="nav-link px-3.5 py-2 rounded-lg text-sm font-medium text-amber-400 hover:bg-amber-500/10 transition-colors flex items-center gap-1.5 border border-amber-500/20 ml-1">
+                        <i class="fa-solid fa-shield-halved"></i>Admin
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Right: Search Bar & User Profile -->
+            <div class="flex items-center gap-2.5 sm:gap-4">
+                <!-- Interactive Quick Search -->
+                <div class="relative w-36 sm:w-56 lg:w-64">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 text-xs sm:text-sm pointer-events-none"></i>
+                    <input
+                        id="globalSearchInput"
+                        type="text"
+                        placeholder="Cari judul, genre, tahun..."
+                        oninput="handleGlobalSearch(this.value)"
+                        class="w-full bg-neutral-900/90 hover:bg-neutral-900 focus:bg-neutral-900 text-xs sm:text-sm text-white rounded-full pl-9 pr-8 py-2 border border-neutral-700/80 focus:border-cine-red focus:outline-none transition-all placeholder:text-neutral-500"
+                    >
+                    <button id="clearGlobalSearchBtn" onclick="clearGlobalSearch()" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white text-xs">
+                        <i class="fa-solid fa-circle-xmark"></i>
+                    </button>
+                </div>
+
+                <!-- User Profile / Auth Button -->
+                <button onclick="openAuthModal()" id="userProfileBtn" class="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-full bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 transition-all">
+                    <div id="userAvatarBadge" class="w-7 h-7 rounded-full bg-gradient-to-br from-cine-red to-rose-700 flex items-center justify-center text-xs font-bold text-white">
+                        G
+                    </div>
+                    <div class="hidden sm:flex flex-col items-start text-left">
+                        <span id="userNameLabel" class="text-xs font-semibold text-white leading-tight">Tamu (Guest)</span>
+                        <span id="userStatusLabel" class="text-[10px] text-neutral-400 leading-tight">Klik untuk Login</span>
+                    </div>
+                </button>
+
+                <!-- Mobile Hamburger Button -->
+                <button onclick="toggleMobileMenu()" class="md:hidden p-2.5 rounded-lg bg-neutral-900 border border-neutral-800 text-neutral-300 hover:text-white">
+                    <i id="mobileMenuIcon" class="fa-solid fa-bars text-lg"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Drawer -->
+        <div id="mobileMenuDrawer" class="hidden md:hidden bg-neutral-950 border-b border-neutral-800 px-4 pt-2 pb-4 space-y-1.5">
+            <button onclick="switchView('home'); toggleMobileMenu(false);" data-nav-mobile="home" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium text-white bg-white/10 flex items-center gap-3">
+                <i class="fa-solid fa-house text-cine-red w-5"></i>Home
+            </button>
+            <button onclick="switchView('movies'); toggleMobileMenu(false);" data-nav-mobile="movies" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium text-neutral-300 hover:bg-white/5 flex items-center gap-3">
+                <i class="fa-solid fa-film w-5"></i>Movies (Katalog & Filter)
+            </button>
+            <button onclick="switchView('genres'); toggleMobileMenu(false);" data-nav-mobile="genres" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium text-neutral-300 hover:bg-white/5 flex items-center gap-3">
+                <i class="fa-solid fa-layer-group w-5"></i>Genres
+            </button>
+            <button onclick="switchView('mylist'); toggleMobileMenu(false);" data-nav-mobile="mylist" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium text-neutral-300 hover:bg-white/5 flex items-center justify-between">
+                <span class="flex items-center gap-3"><i class="fa-solid fa-bookmark w-5"></i>My List & Riwayat</span>
+                <span id="mobileWatchlistBadge" class="px-2 py-0.5 text-xs font-bold rounded-full bg-cine-red text-white">0</span>
+            </button>
+            <button onclick="switchView('admin'); toggleMobileMenu(false);" data-nav-mobile="admin" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium text-amber-400 hover:bg-amber-500/10 flex items-center gap-3">
+                <i class="fa-solid fa-shield-halved w-5"></i>Admin Dashboard
+            </button>
+        </div>
+    </header>
+
+    <!-- ==================== SKELETON LOADING OVERLAY ==================== -->
+    <div id="skeletonView" class="hidden pt-24 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full space-y-8">
+        <div class="w-full h-72 sm:h-96 rounded-2xl skeleton-shimmer"></div>
+        <div class="space-y-3">
+            <div class="w-48 h-6 rounded skeleton-shimmer"></div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <div class="aspect-[2/3] rounded-xl skeleton-shimmer"></div>
+                <div class="aspect-[2/3] rounded-xl skeleton-shimmer"></div>
+                <div class="aspect-[2/3] rounded-xl skeleton-shimmer"></div>
+                <div class="aspect-[2/3] rounded-xl skeleton-shimmer"></div>
+                <div class="aspect-[2/3] rounded-xl skeleton-shimmer hidden lg:block"></div>
+                <div class="aspect-[2/3] rounded-xl skeleton-shimmer hidden lg:block"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MAIN CONTENT CONTAINER ==================== -->
+    <main class="flex-grow pt-16 sm:pt-20">
+
+        <!-- ==================== VIEW 1: HOMEPAGE ==================== -->
+        <section id="view-home" class="space-y-10 pb-16">
+            <!-- Hero Featured Banner -->
+            <div id="heroBannerContainer" class="relative w-full min-h-[480px] sm:min-h-[560px] lg:min-h-[620px] flex items-end pb-10 sm:pb-14 overflow-hidden">
+                <!-- Populated dynamically by renderHeroBanner() -->
+            </div>
+
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 -mt-6 relative z-10">
+
+                <!-- 1. Continue Watching Row (Dynamically hidden if empty) -->
+                <div id="continueWatchingSection" class="hidden space-y-4 bg-neutral-900/60 border border-neutral-800/90 p-4 sm:p-6 rounded-2xl">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-2 h-6 rounded-full bg-cine-red"></span>
+                            <h2 class="font-display text-lg sm:text-xl font-bold text-white">Continue Watching</h2>
+                            <span id="continueWatchingCount" class="text-xs px-2 py-0.5 rounded-full bg-neutral-800 text-neutral-300 font-medium"></span>
+                        </div>
+                        <button onclick="clearAllWatchHistory()" class="text-xs text-neutral-400 hover:text-rose-400 transition-colors flex items-center gap-1">
+                            <i class="fa-solid fa-trash-can"></i> Bersihkan Riwayat
+                        </button>
+                    </div>
+                    <div id="continueWatchingGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <!-- Rendered via JS -->
+                    </div>
+                </div>
+
+                <!-- 2. Trending Movies Row -->
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-1.5 h-6 rounded-full bg-cine-red"></span>
+                            <h2 class="font-display text-lg sm:text-2xl font-bold text-white">Trending Movies</h2>
+                            <span class="text-xs px-2 py-0.5 rounded bg-cine-red/15 text-cine-red border border-cine-red/30 font-semibold">TOP MINGGU INI</span>
+                        </div>
+                        <button onclick="openCatalogWithSort('popular')" class="text-xs sm:text-sm text-neutral-400 hover:text-white flex items-center gap-1 transition-colors">
+                            Lihat Semua <i class="fa-solid fa-chevron-right text-xs"></i>
+                        </button>
+                    </div>
+                    <div id="trendingMoviesRow" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-5"></div>
+                </div>
+
+                <!-- 3. Browse by Genre Quick Filter -->
+                <div class="space-y-4 bg-gradient-to-r from-neutral-900 via-neutral-900/80 to-neutral-900 border border-neutral-800 p-5 sm:p-6 rounded-2xl">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                            <h2 class="font-display text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+                                <i class="fa-solid fa-compass text-cine-red"></i> Browse by Genre
+                            </h2>
+                            <p class="text-xs text-neutral-400">Jelajahi koleksi film gratis legal berdasarkan kategori favorit Anda</p>
+                        </div>
+                        <button onclick="switchView('genres')" class="text-xs text-cine-red hover:underline font-medium self-start sm:self-auto">
+                            Buka Halaman Genre Lengkap &rarr;
+                        </button>
+                    </div>
+                    <!-- Genre Pills -->
+                    <div id="homeGenrePills" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2"></div>
+                    <!-- Filtered Quick Row -->
+                    <div id="homeGenreMoviesGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 pt-2"></div>
+                </div>
+
+                <!-- 4. Popular Movies Row -->
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-1.5 h-6 rounded-full bg-amber-500"></span>
+                            <h2 class="font-display text-lg sm:text-2xl font-bold text-white">Popular Movies (Rating Tertinggi)</h2>
+                        </div>
+                        <button onclick="openCatalogWithSort('rating')" class="text-xs sm:text-sm text-neutral-400 hover:text-white flex items-center gap-1 transition-colors">
+                            Lihat Semua <i class="fa-solid fa-chevron-right text-xs"></i>
+                        </button>
+                    </div>
+                    <div id="popularMoviesRow" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-5"></div>
+                </div>
+
+                <!-- 5. Recently Added Row -->
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-1.5 h-6 rounded-full bg-emerald-500"></span>
+                            <h2 class="font-display text-lg sm:text-2xl font-bold text-white">Recently Added</h2>
+                        </div>
+                        <button onclick="openCatalogWithSort('newest')" class="text-xs sm:text-sm text-neutral-400 hover:text-white flex items-center gap-1 transition-colors">
+                            Lihat Semua <i class="fa-solid fa-chevron-right text-xs"></i>
+                        </button>
+                    </div>
+                    <div id="recentMoviesRow" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-5"></div>
+                </div>
+
+                <!-- 6. Recommended for You Row -->
+                <div class="space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-1.5 h-6 rounded-full bg-purple-500"></span>
+                            <div>
+                                <h2 class="font-display text-lg sm:text-2xl font-bold text-white">Recommended for You</h2>
+                                <p id="recommendationSubtext" class="text-xs text-neutral-400">Disuaikan dengan preferensi genre dan riwayat tontonan Anda</p>
+                            </div>
+                        </div>
+                        <button onclick="openAuthModal()" class="text-xs px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 text-neutral-300 self-start sm:self-auto">
+                            <i class="fa-solid fa-sliders mr-1.5 text-cine-red"></i>Atur Preferensi Genre
+                        </button>
+                    </div>
+                    <div id="recommendedMoviesRow" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-5"></div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ==================== VIEW 2: MOVIES CATALOG (SEARCH & FILTER) ==================== -->
+        <section id="view-movies" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-neutral-800">
+                <div>
+                    <h1 class="font-display text-2xl sm:text-3xl font-bold text-white">Katalog Film Legal</h1>
+                    <p class="text-sm text-neutral-400 mt-1">Semua film memiliki lisensi distribusi terbuka (Public Domain, CC-BY, atau Official Free Stream).</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span id="catalogCountBadge" class="px-3 py-1.5 rounded-lg bg-neutral-900 border border-neutral-800 text-xs font-semibold text-neutral-300">
+                        Menampilkan 12 Film
+                    </span>
+                    <button onclick="resetCatalogFilters()" class="px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 text-xs font-medium text-neutral-300 transition-colors">
+                        <i class="fa-solid fa-rotate-left mr-1"></i>Reset Filter
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 bg-neutral-900/90 border border-neutral-800 p-4 rounded-2xl">
+                <!-- Search Input -->
+                <div class="lg:col-span-2">
+                    <label class="block text-[11px] uppercase tracking-wider text-neutral-400 font-semibold mb-1.5">Cari Judul / Pemeran / Kata Kunci</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-500 text-sm"></i>
+                        <input
+                            id="catalogSearchInput"
+                            type="text"
+                            placeholder="Ketik judul film (mis. Sintel, Tears of Steel)..."
+                            oninput="applyCatalogFilters()"
+                            class="w-full bg-neutral-950 text-sm text-white rounded-xl pl-10 pr-4 py-2.5 border border-neutral-800 focus:border-cine-red focus:outline-none"
+                        >
+                    </div>
+                </div>
+
+                <!-- Genre Filter -->
+                <div>
+                    <label class="block text-[11px] uppercase tracking-wider text-neutral-400 font-semibold mb-1.5">Filter Genre</label>
+                    <select id="filterGenreSelect" onchange="applyCatalogFilters()" class="w-full bg-neutral-950 text-sm text-white rounded-xl px-3.5 py-2.5 border border-neutral-800 focus:border-cine-red focus:outline-none">
+                        <option value="all">Semua Genre</option>
+                    </select>
+                </div>
+
+                <!-- Year & Language Filter -->
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[11px] uppercase tracking-wider text-neutral-400 font-semibold mb-1.5">Tahun Rilis</label>
+                        <select id="filterYearSelect" onchange="applyCatalogFilters()" class="w-full bg-neutral-950 text-sm text-white rounded-xl px-2.5 py-2.5 border border-neutral-800 focus:border-cine-red focus:outline-none">
+                            <option value="all">Semua</option>
+                            <option value="2020s">2020 - Sekarang</option>
+                            <option value="2010s">2010 - 2019</option>
+                            <option value="2000s">2000 - 2009</option>
+                            <option value="classic">Klasik (&lt; 2000)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] uppercase tracking-wider text-neutral-400 font-semibold mb-1.5">Bahasa</label>
+                        <select id="filterLangSelect" onchange="applyCatalogFilters()" class="w-full bg-neutral-950 text-sm text-white rounded-xl px-2.5 py-2.5 border border-neutral-800 focus:border-cine-red focus:outline-none">
+                            <option value="all">Semua</option>
+                            <option value="English">English</option>
+                            <option value="No Dialogue">Non-Dialog</option>
+                            <option value="French/Silent">French / Klasik</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Sort Order -->
+                <div>
+                    <label class="block text-[11px] uppercase tracking-wider text-neutral-400 font-semibold mb-1.5">Urutkan Berdasarkan</label>
+                    <select id="filterSortSelect" onchange="applyCatalogFilters()" class="w-full bg-neutral-950 text-sm text-white rounded-xl px-3.5 py-2.5 border border-neutral-800 focus:border-cine-red focus:outline-none">
+                        <option value="popular">Popularitas Tertinggi</option>
+                        <option value="rating">Skor Rating Tertinggi</option>
+                        <option value="newest">Tahun Rilis Terbaru</option>
+                        <option value="title">Judul (A - Z)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Results Grid -->
+            <div id="catalogGridContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-6"></div>
+
+            <!-- Empty State -->
+            <div id="catalogEmptyState" class="hidden text-center py-16 bg-neutral-900/40 rounded-2xl border border-neutral-800/80 space-y-3">
+                <div class="w-16 h-16 rounded-full bg-neutral-800 mx-auto flex items-center justify-center text-neutral-400 text-2xl">
+                    <i class="fa-solid fa-film"></i>
+                </div>
+                <h3 class="text-lg font-bold text-white">Tidak Ada Film yang Cocok</h3>
+                <p class="text-sm text-neutral-400 max-w-md mx-auto">Coba ubah kata kunci pencarian atau atur ulang filter genre, tahun rilis, maupun bahasa.</p>
+                <button onclick="resetCatalogFilters()" class="px-4 py-2 rounded-xl bg-cine-red text-white text-sm font-semibold hover:bg-cine-redHover transition-colors">
+                    Tampilkan Semua Film
+                </button>
+            </div>
+        </section>
+
+        <!-- ==================== VIEW 3: GENRES COLLECTIONS ==================== -->
+        <section id="view-genres" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+            <div>
+                <h1 class="font-display text-2xl sm:text-3xl font-bold text-white">Koleksi Genre Film</h1>
+                <p class="text-sm text-neutral-400 mt-1">Pilih kategori genre untuk menjelajahi kurasi film sesuai suasana hati Anda.</p>
+            </div>
+
+            <!-- 10 Genre Cards Grid -->
+            <div id="genreCardsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4"></div>
+
+            <!-- Selected Genre Showcase -->
+            <div class="space-y-4 pt-4 border-t border-neutral-800">
+                <div class="flex items-center justify-between">
+                    <h2 id="selectedGenreHeading" class="font-display text-xl sm:text-2xl font-bold text-white">Semua Genre Pilihan</h2>
+                    <span id="selectedGenreCount" class="text-xs px-3 py-1 rounded-full bg-neutral-900 border border-neutral-800 text-neutral-300"></span>
+                </div>
+                <div id="genreShowcaseGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-5"></div>
+            </div>
+        </section>
+
+        <!-- ==================== VIEW 4: MY LIST (WATCHLIST & WATCH HISTORY) ==================== -->
+        <section id="view-mylist" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+            <!-- Watchlist Section -->
+            <div class="space-y-5">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-neutral-800">
+                    <div>
+                        <h1 class="font-display text-2xl sm:text-3xl font-bold text-white flex items-center gap-2.5">
+                            <i class="fa-solid fa-bookmark text-cine-red"></i> Daftar Tontonan Saya (Watchlist)
+                        </h1>
+                        <p class="text-sm text-neutral-400 mt-1">Film yang Anda simpan untuk ditonton nanti.</p>
+                    </div>
+                    <button onclick="switchView('movies')" class="px-4 py-2 rounded-xl bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 text-xs sm:text-sm font-medium text-white self-start sm:self-auto">
+                        <i class="fa-solid fa-plus mr-1.5 text-cine-red"></i>Cari Film Baru
+                    </button>
+                </div>
+
+                <div id="watchlistGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-5"></div>
+
+                <div id="watchlistEmptyState" class="hidden text-center py-14 bg-neutral-900/40 rounded-2xl border border-neutral-800 space-y-3">
+                    <i class="fa-regular fa-bookmark text-3xl text-neutral-500"></i>
+                    <h3 class="text-base font-bold text-white">Daftar Tontonan Masih Kosong</h3>
+                    <p class="text-xs sm:text-sm text-neutral-400 max-w-md mx-auto">Tekan tombol <span class="text-white font-semibold">+ My List</span> pada poster atau halaman detail film untuk menyimpannya di sini.</p>
+                    <button onclick="switchView('movies')" class="px-4 py-2 rounded-xl bg-cine-red hover:bg-cine-redHover text-white text-xs sm:text-sm font-semibold">
+                        Jelajahi Katalog Film
+                    </button>
+                </div>
+            </div>
+
+            <!-- Watch History Section -->
+            <div class="space-y-5 pt-4 border-t border-neutral-800">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="font-display text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-clock-rotate-left text-amber-400"></i> Riwayat Tontonan & Progres (Continue Watching)
+                        </h2>
+                        <p class="text-xs sm:text-sm text-neutral-400">Posisi detik terakhir pemutaran disimpan secara otomatis.</p>
+                    </div>
+                    <button onclick="clearAllWatchHistory()" class="text-xs text-neutral-400 hover:text-rose-400 transition-colors">
+                        <i class="fa-solid fa-trash-can mr-1"></i>Hapus Semua Riwayat
+                    </button>
+                </div>
+
+                <div id="historyListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+            </div>
+        </section>
+
+        <!-- ==================== VIEW 5: ADMIN DASHBOARD ==================== -->
+        <section id="view-admin" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+            <!-- Admin Header -->
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-gradient-to-r from-neutral-900 via-neutral-900 to-amber-950/30 border border-amber-500/30 p-5 sm:p-6 rounded-2xl">
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2">
+                        <span class="px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                            <i class="fa-solid fa-shield-halved mr-1"></i>Admin Control Panel
+                        </span>
+                        <span class="text-xs text-neutral-400">CineStream v1.0 Management</span>
+                    </div>
+                    <h1 class="font-display text-2xl sm:text-3xl font-bold text-white">Dashboard Katalog, Lisensi & Telemetri Video</h1>
+                    <p class="text-xs sm:text-sm text-neutral-400">Kelola metadata film, verifikasi hak distribusi legal, atur Featured Hero, dan pantau ketersediaan sumber streaming.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2.5">
+                    <button onclick="verifyAllVideoStreams()" id="batchCheckStreamsBtn" class="px-4 py-2.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-xs sm:text-sm font-semibold text-emerald-400 flex items-center gap-2 transition-colors">
+                        <i class="fa-solid fa-satellite-dish"></i> Cek Status Semua Video
+                    </button>
+                    <button onclick="openAdminMovieModal()" class="px-4 py-2.5 rounded-xl bg-cine-red hover:bg-cine-redHover text-xs sm:text-sm font-semibold text-white flex items-center gap-2 shadow-lg shadow-cine-red/25 transition-all">
+                        <i class="fa-solid fa-plus"></i> Tambah Film Legal Baru
+                    </button>
+                </div>
+            </div>
+
+            <!-- Success Metrics Cards (PRD Section 11) -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-neutral-900 border border-neutral-800 p-4 sm:p-5 rounded-2xl space-y-1">
+                    <div class="flex items-center justify-between text-neutral-400 text-xs">
+                        <span>Film Aktif & Legal</span>
+                        <i class="fa-solid fa-film text-cine-red text-base"></i>
+                    </div>
+                    <div id="metricTotalMovies" class="font-display text-2xl sm:text-3xl font-extrabold text-white">12</div>
+                    <div id="metricVerifiedLicenses" class="text-[11px] text-emerald-400 font-medium">100% Hak Distribusi Terverifikasi</div>
+                </div>
+                <div class="bg-neutral-900 border border-neutral-800 p-4 sm:p-5 rounded-2xl space-y-1">
+                    <div class="flex items-center justify-between text-neutral-400 text-xs">
+                        <span>Rasio Keberhasilan Putar</span>
+                        <i class="fa-solid fa-circle-play text-emerald-400 text-base"></i>
+                    </div>
+                    <div id="metricPlaySuccessRate" class="font-display text-2xl sm:text-3xl font-extrabold text-white">99.2%</div>
+                    <div id="metricTotalViews" class="text-[11px] text-neutral-400">Total Sesi Streaming: 0</div>
+                </div>
+                <div class="bg-neutral-900 border border-neutral-800 p-4 sm:p-5 rounded-2xl space-y-1">
+                    <div class="flex items-center justify-between text-neutral-400 text-xs">
+                        <span>Total Tersimpan di Watchlist</span>
+                        <i class="fa-solid fa-bookmark text-amber-400 text-base"></i>
+                    </div>
+                    <div id="metricWatchlistCount" class="font-display text-2xl sm:text-3xl font-extrabold text-white">0</div>
+                    <div class="text-[11px] text-neutral-400">Retensi Personalisasi Pengguna</div>
+                </div>
+                <div class="bg-neutral-900 border border-neutral-800 p-4 sm:p-5 rounded-2xl space-y-1">
+                    <div class="flex items-center justify-between text-neutral-400 text-xs">
+                        <span>Kesehatan Server Video</span>
+                        <i class="fa-solid fa-server text-sky-400 text-base"></i>
+                    </div>
+                    <div id="metricStreamHealth" class="font-display text-2xl sm:text-3xl font-extrabold text-emerald-400">Optimal</div>
+                    <div id="metricLastCheckTime" class="text-[11px] text-neutral-400">CDN & Fallback Archive Siap</div>
+                </div>
+            </div>
+
+            <!-- Admin Catalog Table & Audit Logs Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Movie Catalog Management Table (2 Columns Wide) -->
+                <div class="lg:col-span-2 bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden flex flex-col">
+                    <div class="p-4 sm:p-5 border-b border-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                            <h2 class="font-display text-lg font-bold text-white">Daftar Katalog & Sumber Video (`movies` & `video_sources`)</h2>
+                            <p class="text-xs text-neutral-400">Klik ikon bintang untuk menjadikan Featured Hero di Homepage</p>
+                        </div>
+                        <input
+                            id="adminTableSearch"
+                            type="text"
+                            placeholder="Filter katalog admin..."
+                            oninput="renderAdminTable()"
+                            class="bg-neutral-950 text-xs text-white rounded-lg px-3 py-2 border border-neutral-800 focus:border-cine-red focus:outline-none w-full sm:w-52"
+                        >
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-neutral-800 text-[11px] uppercase tracking-wider text-neutral-400 bg-neutral-950/60">
+                                    <th class="py-3 px-4">Film</th>
+                                    <th class="py-3 px-3">Lisensi & Bukti</th>
+                                    <th class="py-3 px-3">Status Stream</th>
+                                    <th class="py-3 px-3 text-center">Hero</th>
+                                    <th class="py-3 px-4 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminMoviesTableBody" class="divide-y divide-neutral-800/70 text-xs sm:text-sm">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Right Column: Audit Logs (`admin_logs` & `view_events`) -->
+                <div class="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 sm:p-5 flex flex-col justify-between space-y-4">
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between border-b border-neutral-800 pb-3">
+                            <div>
+                                <h2 class="font-display text-base font-bold text-white flex items-center gap-2">
+                                    <i class="fa-solid fa-clipboard-list text-amber-400"></i> Audit & Telemetry Logs
+                                </h2>
+                                <p class="text-[11px] text-neutral-400">Tabel `admin_logs` & `view_events`</p>
+                            </div>
+                            <span class="px-2 py-0.5 text-[10px] rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-semibold">LIVE</span>
+                        </div>
+                        <div id="adminAuditLogsContainer" class="space-y-2.5 max-h-[420px] overflow-y-auto pr-1">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+
+                    <div class="pt-3 border-t border-neutral-800 flex items-center justify-between text-xs text-neutral-400">
+                        <span>Reset Data Katalog ke Default?</span>
+                        <button onclick="resetDatabaseToDefault()" class="text-rose-400 hover:underline font-medium">
+                            Reset Database
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="bg-neutral-950 border-t border-neutral-900 py-10 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div class="flex flex-col items-center sm:items-start gap-2 text-center sm:text-left">
+                <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded bg-cine-red flex items-center justify-center">
+                        <i class="fa-solid fa-play text-white text-xs"></i>
+                    </div>
+                    <span class="font-display font-extrabold text-lg text-white">CINE<span class="text-cine-red">STREAM</span></span>
+                    <span class="text-xs px-2 py-0.5 rounded bg-neutral-900 border border-neutral-800 text-neutral-400">v1.0 MVP</span>
+                </div>
+                <p class="text-xs text-neutral-500 max-w-md">
+                    Platform streaming film gratis legal. Seluruh konten berasal dari Open Movie Project (Blender Studio CC-BY), Public Domain, dan arsip distribusi terbuka resmi.
+                </p>
+            </div>
+            <div class="flex flex-wrap justify-center gap-4 text-xs text-neutral-400">
+                <button onclick="switchView('home')" class="hover:text-white">Home</button>
+                <button onclick="switchView('movies')" class="hover:text-white">Movies Catalog</button>
+                <button onclick="switchView('genres')" class="hover:text-white">Genres</button>
+                <button onclick="switchView('mylist')" class="hover:text-white">Watchlist</button>
+                <button onclick="switchView('admin')" class="hover:text-amber-400">Admin Panel</button>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ==================== MODAL 1: MOVIE DETAIL PAGE MODAL ==================== -->
+    <div id="movieDetailModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6">
+        <div class="relative w-full max-w-4xl bg-cine-card border border-neutral-800 rounded-2xl overflow-hidden shadow-2xl my-8 animate-fadeIn">
+            <!-- Close Button -->
+            <button onclick="closeMovieDetailModal()" class="absolute top-4 right-4 z-30 w-10 h-10 rounded-full bg-black/70 hover:bg-cine-red text-white flex items-center justify-center border border-white/15 transition-colors">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <div id="movieDetailContent">
+                <!-- Populated dynamically by openMovieDetail(movieId) -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL 2: VIDEO STREAMING PLAYER ==================== -->
+    <div id="videoPlayerModal" class="fixed inset-0 z-50 hidden bg-black/95 backdrop-blur-md flex flex-col justify-between p-2 sm:p-6">
+        <!-- Top Bar of Player -->
+        <div class="max-w-6xl w-full mx-auto flex flex-wrap items-center justify-between gap-3 py-2 px-3 bg-neutral-900/90 border border-neutral-800 rounded-xl">
+            <div class="flex items-center gap-3">
+                <button onclick="closeVideoPlayer()" class="px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-cine-red text-white text-xs sm:text-sm font-semibold flex items-center gap-2 transition-colors">
+                    <i class="fa-solid fa-arrow-left"></i> Kembali
+                </button>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h3 id="playerMovieTitle" class="font-display font-bold text-sm sm:text-lg text-white">Judul Film</h3>
+                        <span id="playerLicenseBadge" class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold">CC-BY</span>
+                    </div>
+                    <p id="playerSubInfo" class="text-[11px] text-neutral-400">Server: Primary CDN • Auto-Save Progress Aktif</p>
+                </div>
+            </div>
+
+            <!-- Stream Controls: Server Source, Quality & Subtitle Selector -->
+            <div class="flex flex-wrap items-center gap-2">
+                <!-- Server Source Selector (Includes Fallback Test) -->
+                <div class="flex items-center gap-1.5 bg-neutral-950 border border-neutral-800 rounded-lg px-2.5 py-1">
+                    <i class="fa-solid fa-server text-xs text-sky-400"></i>
+                    <select id="playerServerSelect" onchange="handleServerChange(this.value)" class="bg-transparent text-xs text-white focus:outline-none">
+                        <option value="primary" class="bg-neutral-900">Server 1: Primary CDN (Aktif)</option>
+                        <option value="backup" class="bg-neutral-900">Server 2: Mirror Archive</option>
+                        <option value="broken" class="bg-neutral-900">Simulasi Error Stream (Uji Fallback)</option>
+                    </select>
+                </div>
+
+                <!-- Quality Selector -->
+                <div class="flex items-center gap-1.5 bg-neutral-950 border border-neutral-800 rounded-lg px-2.5 py-1">
+                    <i class="fa-solid fa-sliders text-xs text-cine-red"></i>
+                    <select id="playerQualitySelect" onchange="handleQualityChange(this.value)" class="bg-transparent text-xs text-white focus:outline-none">
+                        <option value="1080p" class="bg-neutral-900">1080p Full HD</option>
+                        <option value="720p" class="bg-neutral-900">720p HD</option>
+                        <option value="480p" class="bg-neutral-900">480p Data Saver</option>
+                    </select>
+                </div>
+
+                <!-- Subtitle Selector -->
+                <div class="flex items-center gap-1.5 bg-neutral-950 border border-neutral-800 rounded-lg px-2.5 py-1">
+                    <i class="fa-solid fa-closed-captioning text-xs text-amber-400"></i>
+                    <select id="playerSubtitleSelect" onchange="handleSubtitleChange(this.value)" class="bg-transparent text-xs text-white focus:outline-none">
+                        <option value="id" class="bg-neutral-900">Subtitle: Bahasa Indonesia</option>
+                        <option value="en" class="bg-neutral-900">Subtitle: English (CC)</option>
+                        <option value="off" class="bg-neutral-900">Subtitle: Nonaktif</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Center Video Stage -->
+        <div id="videoStageContainer" class="relative max-w-6xl w-full mx-auto my-auto aspect-video bg-black rounded-2xl overflow-hidden border border-neutral-800 shadow-2xl group flex items-center justify-center">
+            <video
+                id="mainVideoElement"
+                class="w-full h-full object-contain bg-black cursor-pointer"
+                playsinline
+                preload="metadata"
+                onclick="togglePlayPause()"
+            ></video>
+
+            <!-- Buffering / Loading Spinner -->
+            <div id="videoLoadingSpinner" class="hidden absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-3 pointer-events-none z-20">
+                <div class="w-12 h-12 border-4 border-neutral-600 border-t-cine-red rounded-full animate-spin"></div>
+                <span class="text-xs font-medium text-neutral-200 bg-black/70 px-3 py-1 rounded-full">Memuat Aliran Video Legal...</span>
+            </div>
+
+            <!-- Error Handling & Automatic Fallback Overlay (PRD 4.3) -->
+            <div id="videoErrorOverlay" class="hidden absolute inset-0 bg-neutral-950/95 flex flex-col items-center justify-center p-6 text-center z-30 space-y-4">
+                <div class="w-16 h-16 rounded-full bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-500 text-2xl">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div class="space-y-1 max-w-md">
+                    <h4 class="font-display text-lg font-bold text-white">Gagal Memuat Sumber Video</h4>
+                    <p id="videoErrorMessage" class="text-xs sm:text-sm text-neutral-400">
+                        Koneksi ke sumber video utama terputus atau URL tidak merespons. Kejadian ini telah dicatat ke telemetri <code class="text-amber-400">view_events</code>.
+                    </p>
+                </div>
+                <div class="flex flex-wrap items-center justify-center gap-3">
+                    <button onclick="recoverWithFallbackServer()" class="px-4 py-2.5 rounded-xl bg-cine-red hover:bg-cine-redHover text-white text-xs sm:text-sm font-semibold flex items-center gap-2 shadow-lg">
+                        <i class="fa-solid fa-arrows-rotate"></i> Alihkan ke Backup Server & Lanjutkan
+                    </button>
+                    <button onclick="closeVideoPlayer()" class="px-4 py-2.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-xs sm:text-sm font-medium">
+                        Tutup Player
+                    </button>
+                </div>
+            </div>
+
+            <!-- Synchronized Subtitle Overlay Box -->
+            <div id="subtitleOverlayBox" class="absolute bottom-20 left-1/2 -translate-x-1/2 z-20 pointer-events-none px-4 py-1.5 rounded-lg bg-black/75 text-white text-xs sm:text-base md:text-lg font-medium text-center max-w-[90%] sm:max-w-2xl border border-white/10 shadow-lg transition-opacity">
+                <span id="subtitleTextContent">[Subtitle Bahasa Indonesia Aktif]</span>
+            </div>
+
+            <!-- Resume Playback Toast Banner inside Player -->
+            <div id="resumeBannerToast" class="hidden absolute top-4 left-4 z-20 bg-neutral-900/95 border border-cine-red/50 text-white px-4 py-2.5 rounded-xl shadow-lg flex items-center gap-3 text-xs">
+                <i class="fa-solid fa-clock-rotate-left text-cine-red"></i>
+                <span id="resumeBannerText">Melanjutkan dari posisi terakhir</span>
+                <button onclick="restartVideoFromBeginning()" class="underline text-amber-400 hover:text-amber-300 font-semibold ml-1">
+                    Mulai dari Awal
+                </button>
+            </div>
+
+            <!-- Custom Bottom Control Bar -->
+            <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/95 via-black/75 to-transparent pt-8 pb-3 px-4 flex flex-col gap-2.5 z-20">
+                <!-- Interactive Seek Bar -->
+                <div class="flex items-center gap-3">
+                    <span id="playerCurrentTime" class="text-xs font-mono text-neutral-200 w-12 text-right">00:00</span>
+                    <div class="relative flex-grow flex items-center">
+                        <input
+                            id="playerSeekInput"
+                            type="range"
+                            min="0"
+                            max="100"
+                            value="0"
+                            step="0.1"
+                            oninput="handleSeekBarInput(this.value)"
+                            class="video-range w-full z-10"
+                        >
+                        <div class="w-full h-1.5 bg-neutral-700 rounded-full overflow-hidden absolute left-0 pointer-events-none">
+                            <div id="playerSeekFill" class="h-full bg-cine-red w-0"></div>
+                        </div>
+                    </div>
+                    <span id="playerDurationTime" class="text-xs font-mono text-neutral-400 w-12">00:00</span>
+                </div>
+
+                <!-- Buttons Row -->
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3 sm:gap-4">
+                        <button onclick="togglePlayPause()" id="playerPlayPauseBtn" class="w-9 h-9 rounded-full bg-cine-red hover:bg-cine-redHover text-white flex items-center justify-center transition-transform active:scale-95">
+                            <i class="fa-solid fa-play text-sm"></i>
+                        </button>
+                        <button onclick="skipTime(-10)" title="Mundur 10 detik" class="text-neutral-300 hover:text-white text-xs sm:text-sm flex items-center gap-1">
+                            <i class="fa-solid fa-rotate-left"></i> 10s
+                        </button>
+                        <button onclick="skipTime(10)" title="Maju 10 detik" class="text-neutral-300 hover:text-white text-xs sm:text-sm flex items-center gap-1">
+                            10s <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+
+                        <!-- Volume Control -->
+                        <div class="flex items-center gap-2 ml-1">
+                            <button onclick="toggleMute()" id="playerMuteBtn" class="text-neutral-300 hover:text-white text-sm w-5">
+                                <i class="fa-solid fa-volume-high"></i>
+                            </button>
+                            <input
+                                id="playerVolumeInput"
+                                type="range"
+                                min="0"
+                                max="1"
+                                step="0.05"
+                                value="1"
+                                oninput="handleVolumeChange(this.value)"
+                                class="video-range w-16 sm:w-24 bg-neutral-700 rounded-lg h-1.5"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <span id="autoSaveIndicator" class="text-[11px] text-emerald-400 hidden sm:inline-flex items-center gap-1">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Progres Tersimpan
+                        </span>
+                        <button onclick="toggleFullscreenPlayer()" class="p-2 rounded-lg bg-neutral-800/80 hover:bg-neutral-700 text-white text-xs sm:text-sm" title="Layar Penuh (F)">
+                            <i class="fa-solid fa-expand"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Keyboard Shortcuts Footer Hint -->
+        <div class="max-w-6xl w-full mx-auto flex items-center justify-between text-[11px] text-neutral-400 px-2">
+            <span>Pintasan Keyboard: <strong class="text-neutral-200">Spasi</strong> Play/Pause • <strong class="text-neutral-200">Panah Kiri/Kanan</strong> Geser 10 dtk • <strong class="text-neutral-200">M</strong> Mute • <strong class="text-neutral-200">F</strong> Fullscreen</span>
+            <span id="playerQualityBadgeFooter" class="text-neutral-300 font-semibold">Stream: 1080p MP4 Legal</span>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL 3: USER AUTH & PROFILE PREFERENCES ==================== -->
+    <div id="authModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="relative w-full max-w-md bg-neutral-900 border border-neutral-800 rounded-2xl p-6 shadow-2xl space-y-5">
+            <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-neutral-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-cine-red/20 border border-cine-red/40 flex items-center justify-center text-cine-red text-lg">
+                    <i class="fa-solid fa-user-astronaut"></i>
+                </div>
+                <div>
+                    <h3 class="font-display text-lg font-bold text-white">Akun & Personalisasi CineStream</h3>
+                    <p class="text-xs text-neutral-400">Sinkronkan Watchlist, Riwayat Tontonan, & Preferensi Genre</p>
+                </div>
+            </div>
+
+            <!-- Quick Account Switcher / Login Form -->
+            <div class="space-y-3">
+                <label class="block text-xs font-semibold uppercase tracking-wider text-neutral-400">Nama Profil Pengguna</label>
+                <input
+                    id="authNameInput"
+                    type="text"
+                    placeholder="Masukkan nama Anda..."
+                    class="w-full bg-neutral-950 text-sm text-white rounded-xl px-3.5 py-2.5 border border-neutral-800 focus:border-cine-red focus:outline-none"
+                >
+                <label class="block text-xs font-semibold uppercase tracking-wider text-neutral-400">Email Akun</label>
+                <input
+                    id="authEmailInput"
+                    type="email"
+                    placeholder="nama@email.com"
+                    class="w-full bg-neutral-950 text-sm text-white rounded-xl px-3.5 py-2.5 border border-neutral-800 focus:border-cine-red focus:outline-none"
+                >
+            </div>
+
+            <!-- Preferred Genres Selector -->
+            <div class="space-y-2">
+                <label class="block text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                    Preferensi Genre (Menentukan "Recommended for You")
+                </label>
+                <div id="authGenreCheckboxes" class="flex flex-wrap gap-2">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-3 border-t border-neutral-800 gap-3">
+                <button onclick="switchToGuestMode()" class="px-3.5 py-2 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-xs font-medium text-neutral-300">
+                    Gunakan Mode Tamu
+                </button>
+                <button onclick="saveUserProfile()" class="px-5 py-2.5 rounded-xl bg-cine-red hover:bg-cine-redHover text-xs sm:text-sm font-semibold text-white shadow-lg shadow-cine-red/25">
+                    Simpan & Aktifkan Profil
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL 4: ADMIN ADD / EDIT MOVIE MODAL ==================== -->
+    <div id="adminMovieModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="relative w-full max-w-2xl bg-neutral-900 border border-neutral-800 rounded-2xl p-6 shadow-2xl my-8 space-y-5">
+            <button onclick="closeAdminMovieModal()" class="absolute top-4 right-4 text-neutral-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <div>
+                <h3 id="adminModalTitle" class="font-display text-xl font-bold text-white">Tambah Film Legal Baru</h3>
+                <p class="text-xs text-neutral-400">Pastikan sumber video memiliki lisensi distribusi yang sah (Public Domain / CC-BY / Official Free Stream).</p>
+            </div>
+
+            <form id="adminMovieForm" onsubmit="saveAdminMovie(event)" class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm">
+                <input type="hidden" id="adminMovieId">
+
+                <div class="sm:col-span-2">
+                    <label class="block text-xs text-neutral-400 mb-1">Judul Film *</label>
+                    <input id="formMovieTitle" required type="text" placeholder="Contoh: Tears of Steel" class="w-full bg-neutral-950 text-white rounded-xl px-3.5 py-2 border border-neutral-800 focus:border-cine-red focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs text-neutral-400 mb-1">Tahun Rilis *</label>
+                    <input id="formMovieYear" required type="number" min="1900" max="2030" value="2024" class="w-full bg-neutral-950 text-white rounded-xl px-3.5 py-2 border border-neutral-800 focus:border-cine-red focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs text-neutral-400 mb-1">Durasi (Menit) *</label>
+                    <input id="formMovieDuration" required type="number" min="1" max="300" value="15" class="w-full bg-neutral-950 text-white rounded-xl px-3.5 py-2 border border-neutral-800 focus:border-cine-red focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs text-neutral-400 mb-1">Skor Rating (1.0 - 10.0) *</label>
+                    <input id="formMovieRating" required type="number" step="0.1" min="1" max="10" value="7.8" class="w-full bg-neutral-950 text-white rounded-xl px-3.5 py-2 border border-neutral-800 focus:border-cine-red focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs text-neutral-400 mb-1">Sumber Rating & Bahasa *</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <select id="formMovieRatingSource" class="bg-neutral-950 text-white rounded-xl px-2.5 py-2 border border-neutral-800">
+                            <option value="IMDb">IMDb</option>
+                            <option value="TMDb">TMDb</option>
+                        </select>
+                        <select id="formMovieLanguage" class="bg-neutral-950 text-white rounded-xl px-2.5 py-2 border border-neutral-800">
+                            <option value="English">English</option>
+                            <option value="No Dialogue">No Dialogue</option>
+                            <option value="French/Silent">French/Silent</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="sm:col-span-2">
+                    <label class="block text-xs text-neutral-400 mb-1">Genre (Pisahkan dengan koma) *</label>
+                    <input id="formMovieGenres" required type="text" placeholder="Sci-Fi, Action, Animation" class="w-full bg-neutral-950 text-white rounded-xl px-3.5 py-2 border border-neutral-800 focus:border-cine-red focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs text-neutral-400 mb-1">URL Poster (Vertikal 2:3) *</label>
+                    <input id="formMoviePoster" required type="url" placeholder="https://..." class="w-full bg-neutral-950 text-white rounded-xl px-3.5 py-2 border border-neutral-800 focus:border-cine-red focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs text-neutral-400 mb-1">URL Backdrop Banner (16:9) *</label>
+                    <input id="formMovieBackdrop" required type="url" placeholder="https://..." class="w-full bg-neutral-950 text-white rounded-xl px-3.5 py-2 border border-neutral-800 focus:border-cine-red focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs text-neutral-400 mb-1">Jenis Lisensi Distribusi Legal *</label>
+                    <select id="formMovieLicense" class="w-full bg-neutral-950 text-white rounded-xl px-3.5 py-2 border border-neutral-800">
+                        <option value="Creative Commons CC-BY 4.0">Creative Commons CC-BY 4.0</option>
+                        <option value="Creative Commons CC-BY 3.0">Creative Commons CC-BY 3.0</option>
+                        <option value="Public Domain (Bebas Hak Cipta)">Public Domain (Bebas Hak Cipta)</option>
+                        <option value="Official Free Stream License">Official Free Stream License</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs text-neutral-400 mb-1">URL Sumber Video MP4 Legal *</label>
+                    <input id="formMovieVideoUrl" required type="url" value="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4" class="w-full bg-neutral-950 text-white rounded-xl px-3.5 py-2 border border-neutral-800 focus:border-cine-red focus:outline-none">
+                </div>
+
+                <div class="sm:col-span-2">
+                    <label class="block text-xs text-neutral-400 mb-1">Pemeran / Studio Kreator *</label>
+                    <input id="formMovieCast" required type="text" placeholder="Derek de Lint, Sergio Hasselbaink, Blender Institute" class="w-full bg-neutral-950 text-white rounded-xl px-3.5 py-2 border border-neutral-800 focus:border-cine-red focus:outline-none">
+                </div>
+
+                <div class="sm:col-span-2">
+                    <label class="block text-xs text-neutral-400 mb-1">Sinopsis Lengkap *</label>
+                    <textarea id="formMovieSynopsis" required rows="3" placeholder="Ringkasan cerita film..." class="w-full bg-neutral-950 text-white rounded-xl px-3.5 py-2 border border-neutral-800 focus:border-cine-red focus:outline-none"></textarea>
+                </div>
+
+                <div class="sm:col-span-2 flex items-center justify-end gap-3 pt-3 border-t border-neutral-800">
+                    <button type="button" onclick="closeAdminMovieModal()" class="px-4 py-2 rounded-xl bg-neutral-800 text-neutral-300 hover:bg-neutral-700">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-cine-red hover:bg-cine-redHover text-white font-semibold shadow-lg">
+                        Simpan Data Film
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== GLOBAL TOAST NOTIFICATION ==================== -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+
+    <!-- JavaScript Application Modules -->
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
